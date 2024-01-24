@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+# Apple nonsense
+*.DS_Store
+
+# Build directories
+build/*
+
+# LSP caches
+.ccls-cache/*
+
+# Dynamic version file
+src/version.h
