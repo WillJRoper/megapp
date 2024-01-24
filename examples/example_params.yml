@@ -1,0 +1,120 @@
+# LABEL: MEGA paramfile for testing
+
+# Parameters related to the type of simulation
+Simulation:
+
+  run_name: Simulation_NXXXLXXXX  # An identifier for the simulation.
+  periodic: 1                     # Is the simulation periodic?
+  is_zoom: 0                      # Is the simulation a zoom? Only the region containing high resolution
+                                  # particles will be considered if so.
+
+
+# Parameters related to input particle distribution/FOF catalogue
+Input:
+
+  # File paths to load simulation data. Inputs can either be snapshots (in which case the spatial FOF
+  # is run prior to phase space finding) or FOF catalogues using the MEGA format.
+  # NOTE: .hdf5 extension is assumed.
+  data_type: SWIFT                # What format is the input data? Currently allows MEGA
+                                  # (proprietary format), SWIFT, or FOF.
+  input_dir: snapshots/           # The path to the directory containing the simulation snapshots.
+  input_basename: snapshot_0000   # The name of the first snapshot file. Mega will start with this file
+                                  # and then loop until snapshot_count is reached.
+  snapshot_count: 62             # How many snapshots are there to run?
+
+
+# Parameters related to the output of the halo catalogue and graph
+Output:
+
+  output_catalogs: 1              # Should the halo catalogues themselves be output?
+                                  # (One catalog per snapshot contain all halo data and links)
+  output_graph_format: 0          # Should the format be structured in "graph format". Helpful for SAMs.
+  calculate_props: 1              # If True MEGA will calculate and output halo properties. If False
+                                  # only the particle membership will be output.
+  output_dir: "halos/"            # The path to the directory where outputs should be stored.
+  output_basename: "mega_"        # The base name for MEGA outputs (MEGA will add "catalog_XXXXX.hdf5" or
+                                  # "graph_XXXXX.hdf5" to this to name each output,
+                                  # where XXXXX will be replaced with the "tag" from the snapshot/fof_catalog.
+
+# Parameters defining the cosmological model
+Cosmology:
+
+  read_from_file: 1               # Should we read the cosmology from the snapshots? Parameters
+                                  # below are ignored if so.
+  H0: 67.7                        # The value of the Hubble constant at z=0.
+  h: 0.677                        # The value of little h (H0/100).
+  Om0: 0.3                        # The value of omega matter.
+  Ob0: 0.05                       # The value of omega baryon.
+  Tcmb0: 2.725                    # The temperature of the CMB at z=0.
+
+
+# Parameters related to gravity calculations (used in the calculation of binding energies)
+Gravity:
+
+  comoving_DM_softening: 0.015625       # Comoving softening length.
+  max_physical_DM_softening: 0.004222    # Max physical softening length.
+
+
+# Parameters related to the treatment of different particle types
+Particles:
+
+  part_type_0: 0                  # Flag for considering PartType0 (Gas).
+  part_type_1: 1                  # Flag for considering PartType1 (Dark Matter).
+  part_type_2: 0                  # Flag for considering PartType2 (Background 1).
+  part_type_3: 0                  # Flag for considering PartType3 (Background 2).
+  part_type_4: 0                  # Flag for considering PartType4 (Stars).
+  part_type_5: 0                  # Flag for considering PartType5 (Black Holes).
+  part_type_6: 0                  # Flag for considering PartType6 (Neutrinos).
+
+
+# Parameters related to halos and sub halos, their definition and their linking
+Halos:
+
+  part_threshold: 20              # The minimum number of particles in a halo (FUNDAMENTAL RESULT OF MEGA IS
+                                  # THAT THIS VALUE SHOULD BE 10)
+  link_threshold: 10              # The number of particles in common between structures to define a link
+  min_part_threshold: 10          # The minimum number of particles a halo can fall to when not real is
+                                  # real in the past
+  remove_not_real_halos: 1        # Should we remove halos flagged as not real? (i.e. unbound and not
+                                  # previously part of a bound structure)
+  host_overdensity: 200           # The target overdensity for host level halos
+
+
+# Parameters related to the spatial search, independent of a halo's depth in the overdensity hierarchy (skipped if a FOF catalogue is provided).
+SpatialSearch:
+
+  llcoeff: 0.4                    # Spatial linking length coefficient for host halos
+
+
+# Parameters related to the phase space search, independent of a halo's depth in the overdensity hierarchy.
+PhaseSpaceSearch:
+
+  ini_alpha_v: 50.0               # The initial velocity linking length coefficient for phase-space iteration
+  min_alpha_v: 0.08               # The initial velocity linking length coefficient for phase-space iteration
+  decrement: 0.005                # The amount alpha_v is decremented by in each phase-space iteration
+
+  
+# Parameters related to substructure
+Substructure:
+
+  n_sub_depths: 1                 # How many levels of substructure to search for?
+                                  # (1 = Host + Subhalo, 2 = Host + Subhalo + Globular Clusters, etc.)
+  sub_ratio: 8                    # The ratio in overdensity between substructure and the level above
+                                  # (i.e. host = 200, subhalo = 1600 for sub_ratio = 8).
+
+# NOTE: the spatial linking length coefficient for substructures is defined as,
+# sub_llcoeff = llcoeff / (sub_ratio ** (depth / 3)),
+# where the depth is the overdensity level BELOW the host (i.e. host = 0, subhalo = 1, etc.)
+
+# Parameters related to the tasking
+Tasking:
+
+  cell_grid_dim: 32       # The number of cells along an axis for the cell grid on which tasks are defined.
+
+
+# Parameters related to profiling
+Profiling:
+
+  cpu_profiling: 1                # Flag to turn on CPU profiling.
+  mem_profiling: 1                # Flag to turn on memory profiling.
+  profiling_directory: profiling  # Name of the directory to store profiling outputs in.
