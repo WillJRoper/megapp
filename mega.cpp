@@ -44,15 +44,14 @@ int main(int argc, char *argv[]) {
 
   /* Add runtime options with default values. */
   int verbose;
-  parser.AddOption("-verbose", 2);
+  parser.AddOption(std::string("--verbose"), std::string("-v"), 2);
   int nthreads;
-  parser.AddOption("-threads", 8);
+  parser.AddOption(std::string("--threads"), std::string("-t"), 8);
 
   /* Parse command-line arguments and set options. */
   std::string param_file;
   if (parser.Parse(argc, argv)) {
-    verbose = parser.GetOption("-verbose");
-    nthreads = parser.GetOption("-threads");
+    verbose = parser.GetOption("--verbose");
     param_file = parser.GetParameterFile();
 
   } else {

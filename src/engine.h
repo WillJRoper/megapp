@@ -186,7 +186,7 @@ public:
     log_.message("Running simulation: %s", run_name.c_str());
 
     /* Set the number of threads (threadpool instantiated below). */
-    n_threads = parser.GetOption("-threads");
+    n_threads = parser.GetOption("--threads");
     log_.message("Running on %d threads", n_threads);
 
     /* Are we reading the cosmology from the snapshot? */
