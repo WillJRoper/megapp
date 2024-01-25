@@ -31,6 +31,10 @@
 #include "src/params.h"
 #include "src/talking.h"
 
+// Definition of the static instance pointer, this is required for the
+// singleton pattern.
+Logging *Logging::instance = nullptr;
+
 int main(int argc, char *argv[]) {
 
   /* Check command line arguments. */
@@ -50,22 +54,33 @@ int main(int argc, char *argv[]) {
 
   /* Parse command-line arguments and set options. */
   std::string param_file;
-  if (parser.Parse(argc, argv)) {
+  try {
+    parser.Parse(argc, argv);
     verbose = parser.GetOption("--verbose");
     param_file = parser.GetParameterFile();
 
-  } else {
-    throw std::runtime_error("Failed to parse the command line arguments!");
+  } catch (std::exception &e) {
+    std::cerr << "COMMAND LINE ARG ERROR: " << e.what() << std::endl;
     return 1;
   }
 
   /* Set up the logging class for report to the user. */
-  Logging log(static_cast<LogLevel>(verbose));
+  // NOTE: This is the first and only time the logging class is instantiated.
+  // Herafter, only a single instance exists which is accessed via the static
+  // getInstance() method.
+  Logging *log = Logging::getInstance(static_cast<LogLevel>(verbose));
+
+  // From here the log is setup so we can use the message, v_message,
+  // error, report_error, tic, and toc macros.
 
   /* Parse the parameter file and populate the class. */
-  Parameters params(log);
-  if (params.parseYAMLFile(param_file))
+  Parameters params;
+  try {
+    params.parseYAMLFile(param_file);
+  } catch (std::exception &e) {
+    report_error();
     return 1;
+  }
   // params.printAllParameters();
 
   /* With all that done... */
@@ -73,11 +88,21 @@ int main(int argc, char *argv[]) {
 
   /* Set up the Engine: attach parameters, set up output strings,
    * and instantiate the threadpool. */
-  Engine *engine = new Engine(params, parser, log);
+  try {
+    Engine *engine = new Engine(params, parser, log);
+  } catch (std::exception &e) {
+    report_error();
+    return 1;
+  }
 
   /* Set up the Domain: attach useful parameters, allocate arrays,
    * and load simulation metadata. */
-  Domain *domain = new Domain(params, log);
+  try {
+    Domain *domain = new Domain(params, log);
+  } catch (std::exception &e) {
+    report_error();
+    return 1;
+  }
 
   // engine->threadpool->map(function1, data2, 1000,
   //                         engine->threadpool->threadpool_auto_chunk_size,

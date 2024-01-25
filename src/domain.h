@@ -113,7 +113,7 @@ public:
   BHParticle *black_holes;
 
 #endif /* DARK_MATTER_ONLY */
-  Domain(Parameters params, Logging log);
+  Domain(Parameters params, Logging *log);
   ~Domain();
 
 private:

@@ -98,12 +98,11 @@ public:
    *
    * @throw std::runtime_error if an unknown argument is encountered.
    */
-  bool Parse(int argc, char *argv[]) {
+  void Parse(int argc, char *argv[]) {
 
     /* Handle the --help case. */
     if (std::strcmp(argv[argc - 1], "--help") == 0) {
       std::cout << "HELP INCOMING!" << std::endl;
-      return true;
     }
 
     /* First get the parameter file. */
@@ -130,12 +129,9 @@ public:
       } else {
         /* Unknown argument, print an error
          * message */
-        throw std::runtime_error("Unknown argument: %s", arg);
-        return false;
+        throw std::runtime_error("Unknown argument: %s");
       }
     }
-
-    return true;
   }
 
   /**

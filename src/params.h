@@ -41,7 +41,7 @@ public:
   /** @brief
    *
    */
-  Parameters(Logging log) : _log(log) {}
+  Parameters() = default;
 
   /** @brief
    *
@@ -75,8 +75,8 @@ public:
     if (parameters.count(key) > 0) {
       value = std::get<T>(parameters.at(key));
     } else {
-      _log.error("A required parameter was not set in the parameter file (%s)",
-                 key.c_str());
+      error("A required parameter was not set in the parameter file (%s)",
+            key.c_str());
     }
     return value;
   }
@@ -99,7 +99,7 @@ public:
   /** @brief Function to parse a YAML file and populate the object.
    *
    */
-  int parseYAMLFile(const std::string &filename) {
+  void parseYAMLFile(const std::string &filename) {
 
     /* Try to parse the YAML file.*/
     try {
@@ -107,7 +107,7 @@ public:
       /* Open the YAML file */
       std::ifstream file(filename);
       if (!file.is_open()) {
-        throw std::runtime_error("Failed to open YAML file.");
+        error("Failed to open YAML file (%s).", filename.c_str());
       }
 
       /* Set up some variables we'll need in the loop. */
@@ -166,12 +166,10 @@ public:
           }
         }
       }
-      return 0;
     } catch (const std::exception &e) {
 
       /* Something went wrong, lets say so. */
-      std::cerr << "Error parsing YAML file: " << e.what() << std::endl;
-      return 1;
+      error("Could not parse YAML file: %s", e.what());
     }
   }
 
@@ -198,8 +196,6 @@ public:
   }
 
 private:
-  Logging _log;
-
   /** @brief Map to store key-value pairs
    *
    *
@@ -253,9 +249,8 @@ private:
 
     /* Otherwise, something bizzare has happened... */
     else {
-      _log.error(
-          "Parameter %s could not be converted to string, double, or int!",
-          str.c_str());
+      error("Parameter %s could not be converted to string, double, or int!",
+            str.c_str());
       return str;
     }
   }

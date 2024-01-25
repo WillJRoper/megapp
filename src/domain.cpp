@@ -22,6 +22,7 @@
 /* Includes. */
 #include <cstdlib>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 /* Local includes. */
@@ -40,21 +41,21 @@
  * @param params An instance of the Parameters class containing the parameter
  *               file contents.
  */
-Domain::Domain(Parameters params, Logging log) {
+Domain::Domain(Parameters params, Logging *log) {
 
-  log.tic();
+  tic();
 
   // First lets attach all the parameter file defined members.
 
   /* Is the volume periodic? */
   periodic = params.getParameter("Simulation/periodic", 1);
-  log.message("Running with periodic: %d", periodic);
+  message("Running with periodic: %d", periodic);
 
   /* Are we analysising a zoom simulation? */
   is_zoom = params.getParameter("Simulation/is_zoom", 0);
   if (is_zoom)
-    log.message("This is a zoom simulation: Only the high resolution region "
-                "will be considered.");
+    message("This is a zoom simulation: Only the high resolution region "
+            "will be considered.");
 
   /* Which particles are we working on? */
   for (int i = 0; i < num_part_species; i++) {
@@ -75,13 +76,13 @@ Domain::Domain(Parameters params, Logging log) {
   cdim[0] = params.getParameter("Tasking/cell_grid_dim", 16);
   cdim[1] = cdim[0];
   cdim[2] = cdim[0];
-  log.message("The cell grid has dimensions: [%d, %d, %d]", cdim[0], cdim[1],
-              cdim[2]);
+  message("The cell grid has dimensions: [%d, %d, %d]", cdim[0], cdim[1],
+          cdim[2]);
 
   /* How many cells in total? */
   ncells = cdim[0] * cdim[1] * cdim[2];
   ntop_cells = cdim[0] * cdim[1] * cdim[2];
-  log.message("There are %d top level cells in total", ntop_cells);
+  message("There are %d top level cells in total", ntop_cells);
 
   /* Open the first snapshot and get some metadata. */
   HDF5Helper *snap = new HDF5Helper(
@@ -89,14 +90,14 @@ Domain::Domain(Parameters params, Logging log) {
 
   /* Read the boxsize. */
   if (!(snap->readAttribute("/Header", "BoxSize", boxsize))) {
-    log.error("Failed to read the BoxSize from the snapshot!");
+    error("Failed to read the BoxSize from the snapshot!");
   }
-  log.message("Read box dimensions from the first snapshot: [%.2f, %.2f, %.2f]",
-              boxsize[0], boxsize[1], boxsize[2]);
+  message("Read box dimensions from the first snapshot: [%.2f, %.2f, %.2f]",
+          boxsize[0], boxsize[1], boxsize[2]);
 
   /* Read the number of particles in total. */
   if (!(snap->readAttribute("/Header", "NumPart_Total", npart_type))) {
-    log.error("Failed to read the NumPart_Total from the snapshot!");
+    error("Failed to read the NumPart_Total from the snapshot!");
   }
 
   /* Zero any particle counts not flagged for use in part_flags. */
@@ -113,8 +114,8 @@ Domain::Domain(Parameters params, Logging log) {
     s_arr += " " + std::to_string(npart_type[i]);
   }
   s_arr += "]";
-  log.message("Read the number of particles from the first snapshot: %s",
-              s_arr.c_str());
+  message("Read the number of particles from the first snapshot: %s",
+          s_arr.c_str());
   delete snap;
 
   // Set the total number of particles.
@@ -123,11 +124,11 @@ Domain::Domain(Parameters params, Logging log) {
     npart_tot += npart_type[i];
   }
   if (npart_tot == 0) {
-    log.error(
+    error(
         "The total number of particles is 0! Check your Particles:part_type_* "
         "parameters and ensure a non-zero particle species is flagged.");
   }
-  log.message("Total number of particles: %ld", npart_tot);
+  message("Total number of particles: %ld", npart_tot);
 
   // Calculate the width of the top level cells.
   for (int ijk = 0; ijk < 3; ijk++) {
@@ -151,5 +152,5 @@ Domain::Domain(Parameters params, Logging log) {
   sub_cells =
       (Cell *)std::aligned_alloc(cell_align, 8 * ntop_cells * sizeof(Cell));
 
-  log.toc("Initialising the Domain");
+  toc("Initialising the Domain");
 }
